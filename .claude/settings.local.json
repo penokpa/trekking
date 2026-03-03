@@ -4,7 +4,17 @@
       "WebSearch",
       "WebFetch(domain:authjs.dev)",
       "Bash(cd /Users/nima.t/Projects && rm -rf trekking-init && mkdir trekking-init && cd trekking-init && echo \"N\" | bunx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --turbopack --use-bun 2>&1)",
-      "Bash(git init && git add -A && git commit -m \"Initial Next.js 15 project setup\" 2>&1)"
+      "Bash(git init && git add -A && git commit -m \"Initial Next.js 15 project setup\" 2>&1)",
+      "Bash(bunx shadcn@latest:*)",
+      "Bash(bun add:*)",
+      "Bash(bunx prisma:*)",
+      "Bash(bun run:*)",
+      "Bash(lsof:*)",
+      "Bash(sleep 3:*)",
+      "Bash(sleep 1:*)",
+      "Bash(sleep 4:*)",
+      "Bash(ln:*)",
+      "Bash(tail:*)"
     ]
   }
 }

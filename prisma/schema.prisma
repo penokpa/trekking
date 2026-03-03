@@ -1,0 +1,372 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Enums ───────────────────────────────────────────────
+
+enum UserRole {
+  SUPER_ADMIN
+  AGENCY_ADMIN
+  AGENCY_STAFF
+}
+
+enum AgencyMemberRole {
+  OWNER
+  ADMIN
+  EDITOR
+}
+
+enum AgencyStatus {
+  ACTIVE
+  SUSPENDED
+  PENDING
+}
+
+enum TrekDifficulty {
+  EASY
+  MODERATE
+  CHALLENGING
+  STRENUOUS
+}
+
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum BannerLocation {
+  HOME
+  TREK_LISTING
+}
+
+enum BannerStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum InquiryStatus {
+  NEW
+  READ
+  REPLIED
+  ARCHIVED
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  PAST_DUE
+}
+
+enum PlanInterval {
+  MONTHLY
+  YEARLY
+}
+
+// ─── NextAuth Models ─────────────────────────────────────
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─── Core Models ─────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  passwordHash  String?
+  role          UserRole  @default(AGENCY_STAFF)
+  avatar        String?
+  emailVerified DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  agencyMembers AgencyMember[]
+  blogPosts     BlogPost[]
+}
+
+model Agency {
+  id           String       @id @default(cuid())
+  name         String
+  slug         String       @unique
+  customDomain String?      @unique
+  logo         String?
+  favicon      String?
+  brandColors  Json?
+  fonts        Json?
+  contactInfo  Json?
+  socialLinks  Json?
+  aboutText    String?      @db.Text
+  footerText   String?
+  stats        Json?
+  status       AgencyStatus @default(PENDING)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  members      AgencyMember[]
+  subscription Subscription?
+  treks        Trek[]
+  blogPosts    BlogPost[]
+  blogCategories BlogCategory[]
+  galleryImages GalleryImage[]
+  teamMembers  TeamMember[]
+  faqs         FAQ[]
+  testimonials Testimonial[]
+  customPages  CustomPage[]
+  banners      Banner[]
+  inquiries    Inquiry[]
+  pageViews    PageView[]
+}
+
+model AgencyMember {
+  userId   String
+  agencyId String
+  role     AgencyMemberRole @default(EDITOR)
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agency Agency @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, agencyId])
+}
+
+model Plan {
+  id       String       @id @default(cuid())
+  name     String
+  slug     String       @unique
+  price    Float
+  interval PlanInterval @default(MONTHLY)
+  limits   Json?
+  features Json?
+  isActive Boolean      @default(true)
+
+  subscriptions Subscription[]
+}
+
+model Subscription {
+  id                 String             @id @default(cuid())
+  agencyId           String             @unique
+  planId             String
+  status             SubscriptionStatus @default(ACTIVE)
+  currentPeriodStart DateTime           @default(now())
+  currentPeriodEnd   DateTime
+
+  agency Agency @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  plan   Plan   @relation(fields: [planId], references: [id])
+}
+
+// ─── Content Models ──────────────────────────────────────
+
+model Trek {
+  id          String         @id @default(cuid())
+  agencyId    String
+  title       String
+  slug        String
+  summary     String?        @db.Text
+  description String?        @db.Text
+  duration    Int?
+  difficulty  TrekDifficulty?
+  maxAltitude Int?
+  groupSize   Int?
+  priceFrom   Float?
+  itinerary   Json?
+  includes    Json?
+  excludes    Json?
+  coverImage  String?
+  status      ContentStatus  @default(DRAFT)
+  featured    Boolean        @default(false)
+  region      String?
+  bestSeason  String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  agency       Agency        @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  images       TrekImage[]
+  testimonials Testimonial[]
+  inquiries    Inquiry[]
+
+  @@unique([agencyId, slug])
+}
+
+model TrekImage {
+  id           String @id @default(cuid())
+  trekId       String
+  imageUrl     String
+  caption      String?
+  displayOrder Int    @default(0)
+
+  trek Trek @relation(fields: [trekId], references: [id], onDelete: Cascade)
+}
+
+model BlogPost {
+  id            String        @id @default(cuid())
+  agencyId      String
+  title         String
+  slug          String
+  excerpt       String?       @db.Text
+  body          String?       @db.Text
+  featuredImage String?
+  category      String?
+  tags          Json?
+  authorId      String?
+  status        ContentStatus @default(DRAFT)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  agency Agency @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  author User?  @relation(fields: [authorId], references: [id])
+
+  @@unique([agencyId, slug])
+}
+
+model BlogCategory {
+  id       String @id @default(cuid())
+  agencyId String
+  name     String
+  slug     String
+
+  agency Agency @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
+  @@unique([agencyId, slug])
+}
+
+model GalleryImage {
+  id           String @id @default(cuid())
+  agencyId     String
+  imageUrl     String
+  caption      String?
+  album        String?
+  displayOrder Int    @default(0)
+
+  agency Agency @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+}
+
+model TeamMember {
+  id           String  @id @default(cuid())
+  agencyId     String
+  name         String
+  title        String?
+  bio          String? @db.Text
+  photo        String?
+  displayOrder Int     @default(0)
+
+  agency Agency @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+}
+
+model FAQ {
+  id           String  @id @default(cuid())
+  agencyId     String
+  question     String
+  answer       String  @db.Text
+  category     String?
+  displayOrder Int     @default(0)
+
+  agency Agency @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+}
+
+model Testimonial {
+  id         String   @id @default(cuid())
+  agencyId   String
+  clientName String
+  country    String?
+  trekId     String?
+  rating     Int?
+  reviewText String?  @db.Text
+  photo      String?
+  date       DateTime @default(now())
+  featured   Boolean  @default(false)
+
+  agency Agency @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  trek   Trek?  @relation(fields: [trekId], references: [id])
+}
+
+model CustomPage {
+  id       String        @id @default(cuid())
+  agencyId String
+  title    String
+  slug     String
+  body     String?       @db.Text
+  seoMeta  Json?
+  status   ContentStatus @default(DRAFT)
+
+  agency Agency @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
+  @@unique([agencyId, slug])
+}
+
+model Banner {
+  id              String         @id @default(cuid())
+  agencyId        String
+  title           String
+  subtitle        String?
+  ctaText         String?
+  ctaLink         String?
+  backgroundImage String?
+  startDate       DateTime?
+  endDate         DateTime?
+  location        BannerLocation @default(HOME)
+  status          BannerStatus   @default(ACTIVE)
+
+  agency Agency @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+}
+
+model Inquiry {
+  id          String        @id @default(cuid())
+  agencyId    String
+  trekId      String?
+  name        String
+  email       String
+  phone       String?
+  country     String?
+  travelDates String?
+  groupSize   Int?
+  message     String?       @db.Text
+  status      InquiryStatus @default(NEW)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  agency Agency @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  trek   Trek?  @relation(fields: [trekId], references: [id])
+}
+
+model PageView {
+  id        String   @id @default(cuid())
+  agencyId  String
+  path      String
+  referrer  String?
+  country   String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  agency Agency @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+}
