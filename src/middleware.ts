@@ -30,8 +30,12 @@ export default auth((req) => {
     ? new URL(process.env.NEXT_PUBLIC_APP_URL).host
     : "localhost:3000";
 
-  if (host !== appDomain && !host.startsWith("localhost")) {
-    // Check if it's a subdomain
+  const isLocalhost = host.startsWith("localhost");
+  const isAppDomain = host === appDomain;
+  const isVercelPreview = host.endsWith(".vercel.app");
+
+  if (!isLocalhost && !isAppDomain && !isVercelPreview) {
+    // Check if it's a subdomain of the app domain
     if (host.endsWith(`.${appDomain}`)) {
       const slug = host.replace(`.${appDomain}`, "");
       response.headers.set("x-agency-slug", slug);
@@ -40,7 +44,7 @@ export default auth((req) => {
       response.headers.set("x-agency-domain", host);
     }
   } else if (process.env.DEFAULT_AGENCY_SLUG) {
-    // Dev fallback: use default agency when on localhost with no subdomain
+    // Use default agency for localhost, app domain, and Vercel preview URLs
     response.headers.set("x-agency-slug", process.env.DEFAULT_AGENCY_SLUG);
   }
 
