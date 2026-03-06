@@ -313,13 +313,39 @@ async function main() {
         "Tips",
       ],
       status: "PUBLISHED",
-      featured: false,
+      featured: true,
       region: "Langtang",
       bestSeason: "March-May, October-November",
     },
   });
 
   console.log("  Treks created");
+
+  // ── Trek Images ─────────────────────────────────────
+  await prisma.trekImage.createMany({
+    data: [
+      // Everest Base Camp images
+      { trekId: ebcTrek.id, imageUrl: "/images/treks/ebc-lukla.jpg", caption: "Scenic flight landing at Lukla airport", displayOrder: 1 },
+      { trekId: ebcTrek.id, imageUrl: "/images/treks/ebc-namche.jpg", caption: "Namche Bazaar — the gateway to Everest", displayOrder: 2 },
+      { trekId: ebcTrek.id, imageUrl: "/images/treks/ebc-tengboche.jpg", caption: "Tengboche Monastery with Ama Dablam backdrop", displayOrder: 3 },
+      { trekId: ebcTrek.id, imageUrl: "/images/treks/ebc-basecamp.jpg", caption: "Everest Base Camp at 5,364m", displayOrder: 4 },
+      { trekId: ebcTrek.id, imageUrl: "/images/treks/ebc-kalapatthar.jpg", caption: "Sunrise from Kala Patthar — the classic Everest view", displayOrder: 5 },
+      { trekId: ebcTrek.id, imageUrl: "/images/treks/ebc-suspension.jpg", caption: "Crossing suspension bridges over the Dudh Kosi", displayOrder: 6 },
+      // Annapurna Circuit images
+      { trekId: acTrek.id, imageUrl: "/images/treks/ac-thorong.jpg", caption: "Prayer flags at Thorong La Pass (5,416m)", displayOrder: 1 },
+      { trekId: acTrek.id, imageUrl: "/images/treks/ac-manang.jpg", caption: "The village of Manang with Annapurna III", displayOrder: 2 },
+      { trekId: acTrek.id, imageUrl: "/images/treks/ac-poonhill.jpg", caption: "Sunrise panorama from Poon Hill", displayOrder: 3 },
+      { trekId: acTrek.id, imageUrl: "/images/treks/ac-muktinath.jpg", caption: "Sacred Muktinath Temple", displayOrder: 4 },
+      { trekId: acTrek.id, imageUrl: "/images/treks/ac-tatopani.jpg", caption: "Natural hot springs at Tatopani", displayOrder: 5 },
+      // Langtang Valley images
+      { trekId: lvTrek.id, imageUrl: "/images/treks/lv-kyanjin.jpg", caption: "Kyanjin Gompa and cheese factory", displayOrder: 1 },
+      { trekId: lvTrek.id, imageUrl: "/images/treks/lv-valley.jpg", caption: "Langtang Valley panorama", displayOrder: 2 },
+      { trekId: lvTrek.id, imageUrl: "/images/treks/lv-tserko.jpg", caption: "View from Tserko Ri summit (4,984m)", displayOrder: 3 },
+      { trekId: lvTrek.id, imageUrl: "/images/treks/lv-village.jpg", caption: "Traditional stone houses in Langtang village", displayOrder: 4 },
+    ],
+  });
+
+  console.log("  Trek images created");
 
   // ── Blog Posts ────────────────────────────────────────
   await prisma.blogPost.createMany({
@@ -483,8 +509,59 @@ async function main() {
         trekId: lvTrek.id,
         rating: 4,
         reviewText: "Beautiful trek through the Langtang Valley. Less crowded than other popular routes and the Tamang hospitality was wonderful. The cheese factory was a fun surprise! Great organization by the team.",
-        featured: false,
+        featured: true,
         date: new Date("2024-09-05"),
+      },
+      // Additional trek-specific reviews
+      {
+        agencyId: agency.id,
+        clientName: "David Chen",
+        country: "Canada",
+        trekId: ebcTrek.id,
+        rating: 5,
+        reviewText: "Reaching Everest Base Camp was a dream come true. The guides were incredible — they knew exactly when to push us and when to let us rest. The acclimatization schedule was perfect.",
+        featured: false,
+        date: new Date("2025-03-12"),
+      },
+      {
+        agencyId: agency.id,
+        clientName: "Anna Müller",
+        country: "Austria",
+        trekId: ebcTrek.id,
+        rating: 5,
+        reviewText: "Outstanding experience from start to finish. The views of Ama Dablam from Tengboche are something I'll never forget. Our porter Dawa was incredibly helpful and always smiling.",
+        featured: false,
+        date: new Date("2025-04-08"),
+      },
+      {
+        agencyId: agency.id,
+        clientName: "Pierre Dupont",
+        country: "France",
+        trekId: acTrek.id,
+        rating: 4,
+        reviewText: "Crossing Thorong La Pass was the highlight of my trekking career. The diversity of landscapes on the Annapurna Circuit is simply unmatched — from rice paddies to arctic-like terrain in 18 days.",
+        featured: false,
+        date: new Date("2025-05-20"),
+      },
+      {
+        agencyId: agency.id,
+        clientName: "Lisa Thompson",
+        country: "Australia",
+        trekId: acTrek.id,
+        rating: 5,
+        reviewText: "The hot springs at Tatopani after days of trekking were absolutely heavenly. Great itinerary, perfect pacing, and wonderful food throughout. Highly recommended!",
+        featured: false,
+        date: new Date("2025-10-15"),
+      },
+      {
+        agencyId: agency.id,
+        clientName: "Raj Patel",
+        country: "India",
+        trekId: lvTrek.id,
+        rating: 5,
+        reviewText: "Langtang is an underrated gem. The trek was well-organized, the scenery was stunning, and being off the beaten path made it feel like a real adventure. The Tamang people are so warm and welcoming.",
+        featured: false,
+        date: new Date("2025-11-02"),
       },
     ],
   });
@@ -495,14 +572,14 @@ async function main() {
   await prisma.banner.create({
     data: {
       agencyId: agency.id,
-      title: "Spring Season 2025",
+      title: "Spring Season 2026",
       subtitle: "Book your Himalayan adventure now — early bird discounts available!",
       ctaText: "View Treks",
       ctaLink: "/treks",
       location: "HOME",
       status: "ACTIVE",
-      startDate: new Date("2025-01-01"),
-      endDate: new Date("2025-05-31"),
+      startDate: new Date("2026-01-01"),
+      endDate: new Date("2026-05-31"),
     },
   });
 

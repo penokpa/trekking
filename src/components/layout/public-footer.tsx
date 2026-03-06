@@ -11,7 +11,6 @@ import {
   MapPin,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Separator } from "@/components/ui/separator";
 import { publicNavItems } from "@/lib/constants";
 import { useAgency } from "@/hooks/use-agency";
 
@@ -31,7 +30,15 @@ export function PublicFooter({ className }: { className?: string }) {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className={cn("border-t bg-background", className)}>
+    <footer
+      className={cn(
+        "bg-gradient-to-b from-muted/30 to-muted/60",
+        className
+      )}
+    >
+      {/* Gradient top line */}
+      <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+
       <div className="container py-12">
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
           {/* Agency info */}
@@ -119,7 +126,8 @@ export function PublicFooter({ className }: { className?: string }) {
           </div>
         </div>
 
-        <Separator className="my-8" />
+        {/* Gradient separator */}
+        <div className="my-8 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
 
         {/* Bottom bar */}
         <div className="flex flex-col items-center justify-between gap-4 md:flex-row">

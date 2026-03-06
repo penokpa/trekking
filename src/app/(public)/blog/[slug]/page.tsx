@@ -46,6 +46,9 @@ export default async function BlogPostDetailPage({
         </Link>
       </Button>
 
+      {/* Decorative gradient bar */}
+      <div className="mb-8 h-1.5 w-24 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500" />
+
       {/* Header */}
       <header>
         <div className="flex flex-wrap items-center gap-3">
@@ -67,7 +70,7 @@ export default async function BlogPostDetailPage({
             </span>
           )}
         </div>
-        <h1 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl">
+        <h1 className="mt-4 text-3xl font-bold tracking-tight md:text-5xl">
           {post.title}
         </h1>
         {post.excerpt && (
@@ -79,7 +82,7 @@ export default async function BlogPostDetailPage({
 
       {/* Body */}
       {post.body && (
-        <article className="prose prose-neutral dark:prose-invert max-w-none whitespace-pre-line leading-relaxed">
+        <article className="prose prose-lg prose-neutral dark:prose-invert prose-headings:font-semibold prose-a:text-primary max-w-none whitespace-pre-line leading-relaxed">
           {post.body}
         </article>
       )}
@@ -93,7 +96,11 @@ export default async function BlogPostDetailPage({
               Tags:
             </span>
             {tags.map((tag) => (
-              <Badge key={tag} variant="outline">
+              <Badge
+                key={tag}
+                variant="outline"
+                className="rounded-full transition-colors hover:bg-muted"
+              >
                 {tag}
               </Badge>
             ))}

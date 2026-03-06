@@ -11,6 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { TrekActions } from "@/components/forms/trek-actions";
 import { Plus } from "lucide-react";
 
 export default async function DashboardTreksPage() {
@@ -30,7 +31,7 @@ export default async function DashboardTreksPage() {
           <p className="mt-2 text-muted-foreground">Manage your trek packages.</p>
         </div>
         <Button asChild>
-          <Link href="#">
+          <Link href="/dashboard/treks/new">
             <Plus className="h-4 w-4" />
             Add Trek
           </Link>
@@ -52,6 +53,7 @@ export default async function DashboardTreksPage() {
                 <TableHead>Duration</TableHead>
                 <TableHead>Price</TableHead>
                 <TableHead>Updated</TableHead>
+                <TableHead className="w-[50px]" />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -78,6 +80,9 @@ export default async function DashboardTreksPage() {
                     {trek.priceFrom != null ? `$${trek.priceFrom.toFixed(0)}` : "---"}
                   </TableCell>
                   <TableCell>{trek.updatedAt.toLocaleDateString()}</TableCell>
+                  <TableCell>
+                    <TrekActions trekId={trek.id} trekTitle={trek.title} />
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

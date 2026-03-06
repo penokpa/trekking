@@ -1,8 +1,29 @@
 import Link from "next/link";
+import { getAgencyFromHeaders } from "@/lib/tenant";
+import { AgencyProvider } from "@/components/shared/agency-provider";
+import { PublicHeader } from "@/components/layout/public-header";
+import { PublicFooter } from "@/components/layout/public-footer";
+import { AgencyHomePage } from "@/components/public/agency-homepage";
 import { Button } from "@/components/ui/button";
 import { Mountain } from "lucide-react";
 
-export default function LandingPage() {
+export default async function RootPage() {
+  const agency = await getAgencyFromHeaders();
+
+  if (agency) {
+    return (
+      <AgencyProvider agency={agency}>
+        <div className="flex min-h-screen flex-col" data-brand>
+          <PublicHeader />
+          <main className="flex-1">
+            <AgencyHomePage agencyId={agency.id} agencyName={agency.name} />
+          </main>
+          <PublicFooter />
+        </div>
+      </AgencyProvider>
+    );
+  }
+
   return (
     <div className="flex min-h-screen flex-col">
       <header className="border-b">

@@ -131,3 +131,28 @@
   --primary-foreground: var(--brand-primary-foreground, oklch(0.985 0 0));
   --accent: var(--brand-accent, oklch(0.97 0 0));
 }
+
+/* Dot pattern overlay */
+.pattern-dots {
+  background-image: radial-gradient(circle, rgba(255 255 255 / 0.12) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+/* Subtle animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 3s ease-in-out infinite;
+}

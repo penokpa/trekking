@@ -1,29 +1,76 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Send } from "lucide-react";
 
-export function InquiryForm() {
+type FieldErrors = Record<string, string[] | undefined>;
+
+export function InquiryForm({ trekId }: { trekId?: string }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const formRef = useRef<HTMLFormElement>(null);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setIsSubmitting(true);
+    setError(null);
+    setFieldErrors({});
 
-    // TODO: POST to /api/inquiries
-    // const formData = new FormData(e.currentTarget);
-    // const data = Object.fromEntries(formData.entries());
-    // await fetch("/api/inquiries", { method: "POST", body: JSON.stringify(data) });
+    const formData = new FormData(e.currentTarget);
+    const body: Record<string, unknown> = {
+      name: formData.get("name"),
+      email: formData.get("email"),
+      phone: formData.get("phone") || undefined,
+      country: formData.get("country") || undefined,
+      travelDates: formData.get("travelDates") || undefined,
+      message: formData.get("message"),
+    };
 
-    // Simulate submission for now
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    setIsSubmitting(false);
-    setSubmitted(true);
+    const groupSize = formData.get("groupSize");
+    if (groupSize && String(groupSize).trim() !== "") {
+      body.groupSize = Number(groupSize);
+    }
+
+    if (trekId) {
+      body.trekId = trekId;
+    }
+
+    try {
+      const res = await fetch("/api/inquiries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        if (data.errors) {
+          setFieldErrors(data.errors);
+        }
+        setError(data.message || "Something went wrong");
+        return;
+      }
+
+      setSubmitted(true);
+    } catch {
+      setError("Network error. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  function handleSendAnother() {
+    setSubmitted(false);
+    setError(null);
+    setFieldErrors({});
+    formRef.current?.reset();
   }
 
   if (submitted) {
@@ -36,7 +83,7 @@ export function InquiryForm() {
         <Button
           variant="outline"
           className="mt-4"
-          onClick={() => setSubmitted(false)}
+          onClick={handleSendAnother}
         >
           Send Another Inquiry
         </Button>
@@ -45,7 +92,13 @@ export function InquiryForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form ref={formRef} onSubmit={handleSubmit} className="space-y-5">
+      {error && (
+        <div className="rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          {error}
+        </div>
+      )}
+
       <div className="grid gap-5 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="name">Full Name *</Label>
@@ -55,6 +108,9 @@ export function InquiryForm() {
             placeholder="Your full name"
             required
           />
+          {fieldErrors.name && (
+            <p className="text-xs text-destructive">{fieldErrors.name[0]}</p>
+          )}
         </div>
         <div className="space-y-2">
           <Label htmlFor="email">Email *</Label>
@@ -65,6 +121,9 @@ export function InquiryForm() {
             placeholder="your@email.com"
             required
           />
+          {fieldErrors.email && (
+            <p className="text-xs text-destructive">{fieldErrors.email[0]}</p>
+          )}
         </div>
       </div>
 
@@ -118,6 +177,9 @@ export function InquiryForm() {
           className="min-h-32"
           required
         />
+        {fieldErrors.message && (
+          <p className="text-xs text-destructive">{fieldErrors.message[0]}</p>
+        )}
       </div>
 
       <Button type="submit" size="lg" disabled={isSubmitting} className="w-full">

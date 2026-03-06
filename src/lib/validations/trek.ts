@@ -33,5 +33,13 @@ export const trekSchema = z.object({
   bestSeason: z.string().optional(),
 });
 
+export const galleryImageSchema = z.object({
+  id: z.string().optional(),
+  imageUrl: z.string().url(),
+  caption: z.string().optional(),
+  displayOrder: z.number().int().min(0),
+});
+
 export type TrekInput = z.infer<typeof trekSchema>;
 export type ItineraryDayInput = z.infer<typeof itineraryDaySchema>;
+export type GalleryImageInput = z.infer<typeof galleryImageSchema>;
