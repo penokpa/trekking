@@ -36,9 +36,10 @@ export async function POST(request: Request): Promise<NextResponse> {
     const blob = await put(file.name, file, { access: "public" });
     return NextResponse.json({ url: blob.url });
   } catch (error) {
-    console.error("Upload error:", error);
+    const message = error instanceof Error ? error.message : "Unknown error";
+    console.error("Upload error:", message);
     return NextResponse.json(
-      { error: "Upload failed. Please try again." },
+      { error: message },
       { status: 500 }
     );
   }
