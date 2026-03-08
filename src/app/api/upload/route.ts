@@ -1,40 +1,45 @@
-import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
+import { put } from "@vercel/blob";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const MAX_SIZE = 4 * 1024 * 1024; // 4MB (Vercel Hobby body limit is 4.5MB)
+
 export async function POST(request: Request): Promise<NextResponse> {
-  const body = (await request.json()) as HandleUploadBody;
-
   try {
-    const jsonResponse = await handleUpload({
-      body,
-      request,
-      onBeforeGenerateToken: async () => {
-        const session = await auth();
-        if (!session?.user?.id) {
-          throw new Error("Not authenticated");
-        }
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
 
-        return {
-          allowedContentTypes: [
-            "image/jpeg",
-            "image/png",
-            "image/webp",
-            "image/gif",
-          ],
-          maximumSizeInBytes: 10 * 1024 * 1024, // 10MB
-        };
-      },
-      onUploadCompleted: async () => {
-        // No-op — DB association happens in server actions
-      },
-    });
+    const formData = await request.formData();
+    const file = formData.get("file") as File | null;
 
-    return NextResponse.json(jsonResponse);
+    if (!file) {
+      return NextResponse.json({ error: "No file provided" }, { status: 400 });
+    }
+
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      return NextResponse.json(
+        { error: "Only JPEG, PNG, WebP, and GIF images are allowed" },
+        { status: 400 }
+      );
+    }
+
+    if (file.size > MAX_SIZE) {
+      return NextResponse.json(
+        { error: "File must be under 4MB" },
+        { status: 400 }
+      );
+    }
+
+    const blob = await put(file.name, file, { access: "public" });
+    return NextResponse.json({ url: blob.url });
   } catch (error) {
+    console.error("Upload error:", error);
     return NextResponse.json(
-      { error: (error as Error).message },
-      { status: 400 }
+      { error: "Upload failed. Please try again." },
+      { status: 500 }
     );
   }
 }

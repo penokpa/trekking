@@ -1,12 +1,39 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
-import { upload } from "@vercel/blob/client";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ImagePlus, X, Upload, Loader2, GripVertical } from "lucide-react";
 import { toast } from "sonner";
+
+const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4MB
+
+async function uploadFile(file: File): Promise<string> {
+  if (file.size > MAX_FILE_SIZE) {
+    throw new Error("File must be under 4MB. Please resize or compress it.");
+  }
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const res = await fetch("/api/upload", {
+    method: "POST",
+    body: formData,
+  });
+
+  const data = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    throw new Error(data?.error || `Upload failed (${res.status})`);
+  }
+
+  if (!data?.url) {
+    throw new Error("No URL returned from upload");
+  }
+
+  return data.url;
+}
 
 // ---------- Single Image Upload ----------
 
@@ -24,13 +51,9 @@ export function ImageUpload({ value, onChange, disabled }: ImageUploadProps) {
     async (file: File) => {
       setUploading(true);
       try {
-        const blob = await upload(file.name, file, {
-          access: "public",
-          handleUploadUrl: "/api/upload",
-        });
-        onChange(blob.url);
+        const url = await uploadFile(file);
+        onChange(url);
       } catch (error) {
-        console.error("Upload failed:", error);
         toast.error(error instanceof Error ? error.message : "Upload failed");
       } finally {
         setUploading(false);
@@ -97,7 +120,7 @@ export function ImageUpload({ value, onChange, disabled }: ImageUploadProps) {
         <>
           <Upload className="h-8 w-8 text-muted-foreground" />
           <p className="text-sm text-muted-foreground">
-            Drop an image here or click to upload
+            Drop an image here or click to upload (max 4MB)
           </p>
         </>
       )}
@@ -137,20 +160,16 @@ export function MultiImageUpload({
       if (value.length >= maxImages) return;
       setUploading(true);
       try {
-        const blob = await upload(file.name, file, {
-          access: "public",
-          handleUploadUrl: "/api/upload",
-        });
+        const url = await uploadFile(file);
         onChange([
           ...value,
           {
-            imageUrl: blob.url,
+            imageUrl: url,
             caption: "",
             displayOrder: value.length,
           },
         ]);
       } catch (error) {
-        console.error("Upload failed:", error);
         toast.error(error instanceof Error ? error.message : "Upload failed");
       } finally {
         setUploading(false);
