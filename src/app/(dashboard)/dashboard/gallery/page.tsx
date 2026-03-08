@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import {
@@ -8,8 +7,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Plus, ImageIcon } from "lucide-react";
+import { AddGalleryImageDialog } from "@/components/forms/add-gallery-image-dialog";
+import { DeleteGalleryImageButton } from "@/components/forms/delete-gallery-image-button";
+import { ImageIcon } from "lucide-react";
 
 export default async function DashboardGalleryPage() {
   const session = await auth();
@@ -27,12 +27,7 @@ export default async function DashboardGalleryPage() {
           <h1 className="text-3xl font-bold">Gallery</h1>
           <p className="mt-2 text-muted-foreground">Manage your photo gallery.</p>
         </div>
-        <Button asChild>
-          <Link href="#">
-            <Plus className="h-4 w-4" />
-            Add Image
-          </Link>
-        </Button>
+        <AddGalleryImageDialog />
       </div>
 
       {images.length === 0 ? (
@@ -42,10 +37,10 @@ export default async function DashboardGalleryPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {images.map((image) => (
-            <Card key={image.id}>
+            <Card key={image.id} className="group relative">
               <CardContent className="p-0">
                 <div className="relative aspect-video overflow-hidden rounded-t-xl bg-muted">
-                  {image.imageUrl ? (
+                  {image.imageUrl.startsWith("http") ? (
                     <img
                       src={image.imageUrl}
                       alt={image.caption ?? "Gallery image"}
@@ -56,6 +51,7 @@ export default async function DashboardGalleryPage() {
                       <ImageIcon className="h-10 w-10 text-muted-foreground" />
                     </div>
                   )}
+                  <DeleteGalleryImageButton imageId={image.id} />
                 </div>
               </CardContent>
               <CardHeader className="p-4">

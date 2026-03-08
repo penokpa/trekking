@@ -3,6 +3,37 @@ import { getAgencyFromHeaders } from "@/lib/tenant";
 import { GradientPlaceholder } from "@/components/shared/gradient-placeholder";
 import { ImageIcon } from "lucide-react";
 
+function GalleryImage({
+  image,
+  index,
+}: {
+  image: { id: string; imageUrl: string; caption: string | null };
+  index: number;
+}) {
+  const hasRealImage = image.imageUrl.startsWith("http");
+
+  return (
+    <div className="group relative mb-4 break-inside-avoid overflow-hidden rounded-xl shadow-sm transition-shadow hover:shadow-xl">
+      {hasRealImage ? (
+        <img
+          src={image.imageUrl}
+          alt={image.caption ?? "Gallery image"}
+          className="aspect-[4/3] w-full object-cover"
+        />
+      ) : (
+        <GradientPlaceholder index={index} className="aspect-[4/3]">
+          <ImageIcon className="size-10 text-white/30" />
+        </GradientPlaceholder>
+      )}
+      {image.caption && (
+        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent px-3 py-3 pt-8 text-sm text-white opacity-0 transition-opacity group-hover:opacity-100">
+          {image.caption}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default async function PublicGalleryPage() {
   const agency = await getAgencyFromHeaders();
   if (!agency) return null;
@@ -61,22 +92,7 @@ export default async function PublicGalleryPage() {
                 <div className="mb-6 h-1 w-16 rounded-full bg-gradient-to-r from-purple-500 to-violet-400" />
                 <div className="columns-1 gap-4 sm:columns-2 lg:columns-3">
                   {albumImages.map((image, i) => (
-                    <div
-                      key={image.id}
-                      className="group relative mb-4 break-inside-avoid overflow-hidden rounded-xl shadow-sm transition-shadow hover:shadow-xl"
-                    >
-                      <GradientPlaceholder
-                        index={i}
-                        className="aspect-[4/3]"
-                      >
-                        <ImageIcon className="size-10 text-white/30" />
-                      </GradientPlaceholder>
-                      {image.caption && (
-                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent px-3 py-3 pt-8 text-sm text-white opacity-0 transition-opacity group-hover:opacity-100">
-                          {image.caption}
-                        </div>
-                      )}
-                    </div>
+                    <GalleryImage key={image.id} image={image} index={i} />
                   ))}
                 </div>
               </div>
@@ -95,22 +111,7 @@ export default async function PublicGalleryPage() {
                 )}
                 <div className="columns-1 gap-4 sm:columns-2 lg:columns-3">
                   {ungrouped.map((image, i) => (
-                    <div
-                      key={image.id}
-                      className="group relative mb-4 break-inside-avoid overflow-hidden rounded-xl shadow-sm transition-shadow hover:shadow-xl"
-                    >
-                      <GradientPlaceholder
-                        index={i + 3}
-                        className="aspect-[4/3]"
-                      >
-                        <ImageIcon className="size-10 text-white/30" />
-                      </GradientPlaceholder>
-                      {image.caption && (
-                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent px-3 py-3 pt-8 text-sm text-white opacity-0 transition-opacity group-hover:opacity-100">
-                          {image.caption}
-                        </div>
-                      )}
-                    </div>
+                    <GalleryImage key={image.id} image={image} index={i + 3} />
                   ))}
                 </div>
               </div>
