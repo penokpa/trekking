@@ -1,29 +1,12 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
+import { upload } from "@vercel/blob/client";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ImagePlus, X, Upload, Loader2, GripVertical } from "lucide-react";
 import { toast } from "sonner";
-
-async function uploadFile(file: File): Promise<string> {
-  const formData = new FormData();
-  formData.append("file", file);
-
-  const res = await fetch("/api/upload", {
-    method: "POST",
-    body: formData,
-  });
-
-  if (!res.ok) {
-    const data = await res.json();
-    throw new Error(data.error || "Upload failed");
-  }
-
-  const data = await res.json();
-  return data.url;
-}
 
 // ---------- Single Image Upload ----------
 
@@ -41,9 +24,13 @@ export function ImageUpload({ value, onChange, disabled }: ImageUploadProps) {
     async (file: File) => {
       setUploading(true);
       try {
-        const url = await uploadFile(file);
-        onChange(url);
+        const blob = await upload(file.name, file, {
+          access: "public",
+          handleUploadUrl: "/api/upload",
+        });
+        onChange(blob.url);
       } catch (error) {
+        console.error("Upload failed:", error);
         toast.error(error instanceof Error ? error.message : "Upload failed");
       } finally {
         setUploading(false);
@@ -150,16 +137,20 @@ export function MultiImageUpload({
       if (value.length >= maxImages) return;
       setUploading(true);
       try {
-        const url = await uploadFile(file);
+        const blob = await upload(file.name, file, {
+          access: "public",
+          handleUploadUrl: "/api/upload",
+        });
         onChange([
           ...value,
           {
-            imageUrl: url,
+            imageUrl: blob.url,
             caption: "",
             displayOrder: value.length,
           },
         ]);
       } catch (error) {
+        console.error("Upload failed:", error);
         toast.error(error instanceof Error ? error.message : "Upload failed");
       } finally {
         setUploading(false);
