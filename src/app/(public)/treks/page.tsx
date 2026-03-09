@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { getAgencyFromHeaders } from "@/lib/tenant";
+import { blobSrc } from "@/lib/blob";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -71,9 +72,17 @@ export default async function PublicTreksPage() {
                 key={trek.id}
                 className="group overflow-hidden border-0 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
               >
-                <GradientPlaceholder index={i} className="h-44">
-                  <Mountain className="size-12 text-white/40" />
-                </GradientPlaceholder>
+                {trek.coverImage ? (
+                  <img
+                    src={blobSrc(trek.coverImage)}
+                    alt={trek.title}
+                    className="h-44 w-full object-cover"
+                  />
+                ) : (
+                  <GradientPlaceholder index={i} className="h-44">
+                    <Mountain className="size-12 text-white/40" />
+                  </GradientPlaceholder>
+                )}
                 <CardHeader>
                   <div className="flex flex-wrap items-center gap-2">
                     {trek.difficulty && (

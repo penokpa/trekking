@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { blobSrc } from "@/lib/blob";
 import {
   Card,
   CardContent,
@@ -40,9 +41,9 @@ export default async function DashboardGalleryPage() {
             <Card key={image.id} className="group relative">
               <CardContent className="p-0">
                 <div className="relative aspect-video overflow-hidden rounded-t-xl bg-muted">
-                  {image.imageUrl.startsWith("http") ? (
+                  {image.imageUrl.startsWith("http") || image.imageUrl.startsWith("/api/blob") ? (
                     <img
-                      src={image.imageUrl}
+                      src={blobSrc(image.imageUrl)}
                       alt={image.caption ?? "Gallery image"}
                       className="h-full w-full object-cover"
                     />

@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { getAgencyFromHeaders } from "@/lib/tenant";
+import { blobSrc } from "@/lib/blob";
 import { GradientPlaceholder } from "@/components/shared/gradient-placeholder";
 import { ImageIcon } from "lucide-react";
 
@@ -10,13 +11,13 @@ function GalleryImage({
   image: { id: string; imageUrl: string; caption: string | null };
   index: number;
 }) {
-  const hasRealImage = image.imageUrl.startsWith("http");
+  const hasRealImage = image.imageUrl.startsWith("http") || image.imageUrl.startsWith("/api/blob");
 
   return (
     <div className="group relative mb-4 break-inside-avoid overflow-hidden rounded-xl shadow-sm transition-shadow hover:shadow-xl">
       {hasRealImage ? (
         <img
-          src={image.imageUrl}
+          src={blobSrc(image.imageUrl)}
           alt={image.caption ?? "Gallery image"}
           className="aspect-[4/3] w-full object-cover"
         />

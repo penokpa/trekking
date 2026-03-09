@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ImagePlus, X, Upload, Loader2, GripVertical } from "lucide-react";
 import { toast } from "sonner";
+import { blobSrc } from "@/lib/blob";
 
 const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4MB
 
@@ -75,11 +76,12 @@ export function ImageUpload({ value, onChange, disabled }: ImageUploadProps) {
     return (
       <div className="relative aspect-video w-full max-w-sm overflow-hidden rounded-lg border">
         <Image
-          src={value}
+          src={blobSrc(value)}
           alt="Cover image"
           fill
           className="object-cover"
           sizes="384px"
+          unoptimized
         />
         <Button
           type="button"
@@ -222,11 +224,12 @@ export function MultiImageUpload({
           >
             <div className="relative aspect-video overflow-hidden rounded-t-lg">
               <Image
-                src={img.imageUrl}
+                src={blobSrc(img.imageUrl)}
                 alt={img.caption || `Image ${index + 1}`}
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 50vw, 33vw"
+                unoptimized
               />
               <div className="absolute top-1 left-1 cursor-grab opacity-0 transition-opacity group-hover:opacity-100">
                 <GripVertical className="h-5 w-5 text-white drop-shadow-md" />

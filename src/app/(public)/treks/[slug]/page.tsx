@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { getAgencyFromHeaders } from "@/lib/tenant";
+import { blobSrc } from "@/lib/blob";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -433,24 +434,35 @@ export default async function TrekDetailPage({
                   Gallery
                 </h2>
                 <div className="mt-4 grid gap-3 grid-cols-2 md:grid-cols-3">
-                  {trek.images.map((image, i) => (
+                  {trek.images.map((image, i) => {
+                    const hasRealImage = image.imageUrl.startsWith("http") || image.imageUrl.startsWith("/api/blob");
+                    return (
                     <div
                       key={image.id}
                       className="group relative overflow-hidden rounded-xl shadow-sm transition-shadow hover:shadow-lg"
                     >
+                      {hasRealImage ? (
+                        <img
+                          src={blobSrc(image.imageUrl)}
+                          alt={image.caption ?? `Trek image ${i + 1}`}
+                          className="aspect-[4/3] w-full object-cover"
+                        />
+                      ) : (
                       <GradientPlaceholder
                         index={i}
                         className="aspect-[4/3]"
                       >
                         <ImageIcon className="size-8 text-white/30" />
                       </GradientPlaceholder>
+                      )}
                       {image.caption && (
                         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-3 py-2.5 pt-6 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100">
                           {image.caption}
                         </div>
                       )}
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </section>
             )}
@@ -525,12 +537,20 @@ export default async function TrekDetailPage({
                       className="group"
                     >
                       <Card className="overflow-hidden border-0 shadow-sm transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-lg">
-                        <GradientPlaceholder
-                          index={i + 2}
-                          className="h-32"
-                        >
-                          <Mountain className="size-8 text-white/30" />
-                        </GradientPlaceholder>
+                        {related.coverImage ? (
+                          <img
+                            src={blobSrc(related.coverImage)}
+                            alt={related.title}
+                            className="h-32 w-full object-cover"
+                          />
+                        ) : (
+                          <GradientPlaceholder
+                            index={i + 2}
+                            className="h-32"
+                          >
+                            <Mountain className="size-8 text-white/30" />
+                          </GradientPlaceholder>
+                        )}
                         <CardContent className="p-4">
                           <p className="font-semibold transition-colors group-hover:text-primary">
                             {related.title}
