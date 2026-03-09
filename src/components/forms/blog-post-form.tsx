@@ -251,44 +251,24 @@ export function BlogPostForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Category</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value ?? ""}
-                  >
-                    <FormControl>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {categories.map((cat) => (
-                        <SelectItem key={cat.id} value={cat.name}>
-                          {cat.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>
-                    Or type a custom category below
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="category"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Custom Category</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="Or type a custom category..."
-                      {...field}
-                      value={field.value ?? ""}
-                    />
+                    <>
+                      <Input
+                        placeholder="Select or type a category..."
+                        list="blog-categories"
+                        {...field}
+                        value={field.value ?? ""}
+                      />
+                      <datalist id="blog-categories">
+                        {categories.map((cat) => (
+                          <option key={cat.id} value={cat.name} />
+                        ))}
+                      </datalist>
+                    </>
                   </FormControl>
+                  <FormDescription>
+                    Pick from existing categories or type a new one
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
