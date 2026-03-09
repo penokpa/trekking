@@ -15,3 +15,10 @@ export const blogPostSchema = z.object({
 });
 
 export type BlogPostInput = z.infer<typeof blogPostSchema>;
+
+export const blogCategorySchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  slug: z.string().min(1).regex(/^[a-z0-9-]+$/, "Slug must contain only lowercase letters, numbers, and hyphens"),
+});
+
+export type BlogCategoryInput = z.infer<typeof blogCategorySchema>;

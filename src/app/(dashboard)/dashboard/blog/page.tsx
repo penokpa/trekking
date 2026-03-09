@@ -11,7 +11,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus } from "lucide-react";
+import { BlogActions } from "@/components/forms/blog-actions";
+import { Plus, Tags } from "lucide-react";
 
 export default async function DashboardBlogPage() {
   const session = await auth();
@@ -30,12 +31,20 @@ export default async function DashboardBlogPage() {
           <h1 className="text-3xl font-bold">Blog Posts</h1>
           <p className="mt-2 text-muted-foreground">Manage blog posts.</p>
         </div>
-        <Button asChild>
-          <Link href="#">
-            <Plus className="h-4 w-4" />
-            New Post
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" asChild>
+            <Link href="/dashboard/blog/categories">
+              <Tags className="h-4 w-4" />
+              Categories
+            </Link>
+          </Button>
+          <Button asChild>
+            <Link href="/dashboard/blog/new">
+              <Plus className="h-4 w-4" />
+              New Post
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {posts.length === 0 ? (
@@ -52,6 +61,7 @@ export default async function DashboardBlogPage() {
                 <TableHead>Status</TableHead>
                 <TableHead>Author</TableHead>
                 <TableHead>Created</TableHead>
+                <TableHead className="w-16" />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -73,6 +83,9 @@ export default async function DashboardBlogPage() {
                   </TableCell>
                   <TableCell>{post.author?.name ?? "---"}</TableCell>
                   <TableCell>{post.createdAt.toLocaleDateString()}</TableCell>
+                  <TableCell>
+                    <BlogActions postId={post.id} postTitle={post.title} />
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
