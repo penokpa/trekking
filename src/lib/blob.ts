@@ -1,21 +1,19 @@
 /**
  * Converts a private Vercel Blob URL to a proxy URL for rendering.
- * Private blob URLs are not publicly accessible, so we serve them
- * through /api/blob/[...pathname] which authenticates with the token.
- *
- * DB stores the original blob URL (for deletion via `del()`).
- * Rendering uses the proxy URL (for public display).
+ * Public blob URLs are returned as-is (they're directly accessible via CDN).
+ * Private blob URLs go through /api/blob/[...pathname] which authenticates server-side.
  */
 export function blobSrc(url: string): string {
   if (!url) return url;
 
-  // Extract pathname from private or public blob URLs
+  // Private blob URLs need proxying
   const match = url.match(
-    /https?:\/\/[^/]+\.(?:private|public)\.blob\.vercel-storage\.com\/(.+)/
+    /https?:\/\/[^/]+\.private\.blob\.vercel-storage\.com\/(.+)/
   );
   if (match) {
     return `/api/blob/${match[1]}`;
   }
 
+  // Public blob URLs and other URLs are directly accessible
   return url;
 }
