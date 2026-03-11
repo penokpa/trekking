@@ -11,6 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { TestimonialActions } from "@/components/forms/testimonial-actions";
 import { Plus, Star } from "lucide-react";
 
 export default async function DashboardTestimonialsPage() {
@@ -33,7 +34,7 @@ export default async function DashboardTestimonialsPage() {
           </p>
         </div>
         <Button asChild>
-          <Link href="#">
+          <Link href="/dashboard/testimonials/new">
             <Plus className="h-4 w-4" />
             Add Testimonial
           </Link>
@@ -42,7 +43,9 @@ export default async function DashboardTestimonialsPage() {
 
       {testimonials.length === 0 ? (
         <div className="rounded-lg border border-dashed p-12 text-center">
-          <p className="text-muted-foreground">No testimonials yet. Add your first testimonial.</p>
+          <p className="text-muted-foreground">
+            No testimonials yet. Add your first testimonial.
+          </p>
         </div>
       ) : (
         <div className="rounded-lg border">
@@ -55,6 +58,7 @@ export default async function DashboardTestimonialsPage() {
                 <TableHead>Rating</TableHead>
                 <TableHead>Featured</TableHead>
                 <TableHead>Date</TableHead>
+                <TableHead className="w-16" />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -97,6 +101,12 @@ export default async function DashboardTestimonialsPage() {
                   </TableCell>
                   <TableCell>
                     {testimonial.date.toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    <TestimonialActions
+                      testimonialId={testimonial.id}
+                      clientName={testimonial.clientName}
+                    />
                   </TableCell>
                 </TableRow>
               ))}

@@ -8,12 +8,8 @@ export default auth((req) => {
   const { pathname } = req.nextUrl;
   const host = req.headers.get("host") ?? "";
 
-  // Skip auth routes and API routes
-  if (
-    pathname.startsWith("/login") ||
-    pathname.startsWith("/register") ||
-    pathname.startsWith("/api")
-  ) {
+  // Skip auth routes (no tenant headers needed)
+  if (pathname.startsWith("/login") || pathname.startsWith("/register")) {
     return NextResponse.next();
   }
 
@@ -22,7 +18,7 @@ export default auth((req) => {
     return NextResponse.next();
   }
 
-  // Public routes: resolve tenant from host header
+  // Public routes AND API routes: resolve tenant from host header
   const response = NextResponse.next();
 
   // Check for custom domain or subdomain

@@ -1,4 +1,4 @@
-import { Fragment } from "react";
+import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Badge } from "@/components/ui/badge";
@@ -10,22 +10,54 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { InquiryActions } from "@/components/forms/inquiry-actions";
+import { InquiryFilters } from "./inquiry-filters";
+import type { InquiryStatus } from "@/generated/prisma/client";
 
-export default async function DashboardInquiriesPage() {
+interface Props {
+  searchParams: Promise<{ status?: string }>;
+}
+
+const statusColor: Record<string, string> = {
+  NEW: "bg-blue-100 text-blue-800",
+  READ: "bg-yellow-100 text-yellow-800",
+  REPLIED: "bg-green-100 text-green-800",
+  ARCHIVED: "bg-gray-100 text-gray-800",
+};
+
+const validStatuses: InquiryStatus[] = ["NEW", "READ", "REPLIED", "ARCHIVED"];
+
+export default async function DashboardInquiriesPage({ searchParams }: Props) {
+  const { status } = await searchParams;
   const session = await auth();
   const agencyId = session!.user.agencyId!;
 
-  const inquiries = await db.inquiry.findMany({
-    where: { agencyId },
-    orderBy: { createdAt: "desc" },
-    include: { trek: { select: { title: true } } },
-  });
+  const statusFilter =
+    status && validStatuses.includes(status as InquiryStatus)
+      ? (status as InquiryStatus)
+      : undefined;
 
-  const statusColor: Record<string, string> = {
-    NEW: "bg-blue-100 text-blue-800",
-    READ: "bg-yellow-100 text-yellow-800",
-    REPLIED: "bg-green-100 text-green-800",
-    ARCHIVED: "bg-gray-100 text-gray-800",
+  // Fetch inquiries + counts in parallel
+  const [inquiries, newCount, readCount, repliedCount, archivedCount, allCount] =
+    await Promise.all([
+      db.inquiry.findMany({
+        where: { agencyId, ...(statusFilter ? { status: statusFilter } : {}) },
+        orderBy: { createdAt: "desc" },
+        include: { trek: { select: { title: true } } },
+      }),
+      db.inquiry.count({ where: { agencyId, status: "NEW" } }),
+      db.inquiry.count({ where: { agencyId, status: "READ" } }),
+      db.inquiry.count({ where: { agencyId, status: "REPLIED" } }),
+      db.inquiry.count({ where: { agencyId, status: "ARCHIVED" } }),
+      db.inquiry.count({ where: { agencyId } }),
+    ]);
+
+  const counts = {
+    ALL: allCount,
+    NEW: newCount,
+    READ: readCount,
+    REPLIED: repliedCount,
+    ARCHIVED: archivedCount,
   };
 
   return (
@@ -37,9 +69,15 @@ export default async function DashboardInquiriesPage() {
         </p>
       </div>
 
+      <InquiryFilters counts={counts} />
+
       {inquiries.length === 0 ? (
         <div className="rounded-lg border border-dashed p-12 text-center">
-          <p className="text-muted-foreground">No inquiries yet.</p>
+          <p className="text-muted-foreground">
+            {statusFilter
+              ? `No ${statusFilter.toLowerCase()} inquiries.`
+              : "No inquiries yet."}
+          </p>
         </div>
       ) : (
         <div className="rounded-lg border">
@@ -51,38 +89,41 @@ export default async function DashboardInquiriesPage() {
                 <TableHead>Trek</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Date</TableHead>
+                <TableHead className="w-[50px]" />
               </TableRow>
             </TableHeader>
             <TableBody>
               {inquiries.map((inquiry) => (
-                <Fragment key={inquiry.id}>
-                  <TableRow>
-                    <TableCell className="font-medium">{inquiry.name}</TableCell>
-                    <TableCell>{inquiry.email}</TableCell>
-                    <TableCell>{inquiry.trek?.title ?? "---"}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant="secondary"
-                        className={statusColor[inquiry.status]}
-                      >
-                        {inquiry.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{inquiry.createdAt.toLocaleDateString()}</TableCell>
-                  </TableRow>
-                  {inquiry.message && (
-                    <TableRow>
-                      <TableCell
-                        colSpan={5}
-                        className="bg-muted/30 py-2 text-sm text-muted-foreground"
-                      >
-                        {inquiry.message.length > 200
-                          ? `${inquiry.message.slice(0, 200)}...`
-                          : inquiry.message}
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </Fragment>
+                <TableRow key={inquiry.id}>
+                  <TableCell className="font-medium">
+                    <Link
+                      href={`/dashboard/inquiries/${inquiry.id}`}
+                      className="hover:underline"
+                    >
+                      {inquiry.name}
+                    </Link>
+                  </TableCell>
+                  <TableCell>{inquiry.email}</TableCell>
+                  <TableCell>{inquiry.trek?.title ?? "---"}</TableCell>
+                  <TableCell>
+                    <Badge
+                      variant="secondary"
+                      className={statusColor[inquiry.status]}
+                    >
+                      {inquiry.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    {inquiry.createdAt.toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    <InquiryActions
+                      inquiryId={inquiry.id}
+                      inquiryName={inquiry.name}
+                      currentStatus={inquiry.status}
+                    />
+                  </TableCell>
+                </TableRow>
               ))}
             </TableBody>
           </Table>

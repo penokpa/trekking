@@ -11,6 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { BannerActions } from "@/components/forms/banner-actions";
 import { Plus } from "lucide-react";
 
 export default async function DashboardBannersPage() {
@@ -32,7 +33,7 @@ export default async function DashboardBannersPage() {
           </p>
         </div>
         <Button asChild>
-          <Link href="#">
+          <Link href="/dashboard/banners/new">
             <Plus className="h-4 w-4" />
             Add Banner
           </Link>
@@ -41,7 +42,9 @@ export default async function DashboardBannersPage() {
 
       {banners.length === 0 ? (
         <div className="rounded-lg border border-dashed p-12 text-center">
-          <p className="text-muted-foreground">No banners yet. Create your first banner.</p>
+          <p className="text-muted-foreground">
+            No banners yet. Create your first banner.
+          </p>
         </div>
       ) : (
         <div className="rounded-lg border">
@@ -53,6 +56,7 @@ export default async function DashboardBannersPage() {
                 <TableHead>Status</TableHead>
                 <TableHead>Start Date</TableHead>
                 <TableHead>End Date</TableHead>
+                <TableHead className="w-16" />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -81,6 +85,12 @@ export default async function DashboardBannersPage() {
                     {banner.endDate
                       ? banner.endDate.toLocaleDateString()
                       : "---"}
+                  </TableCell>
+                  <TableCell>
+                    <BannerActions
+                      bannerId={banner.id}
+                      bannerTitle={banner.title}
+                    />
                   </TableCell>
                 </TableRow>
               ))}
