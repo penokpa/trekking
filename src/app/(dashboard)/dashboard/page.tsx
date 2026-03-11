@@ -116,9 +116,10 @@ export default async function DashboardOverviewPage() {
           ) : (
             <div className="space-y-4">
               {recentInquiries.map((inquiry) => (
-                <div
+                <Link
                   key={inquiry.id}
-                  className="flex items-center justify-between rounded-lg border p-4"
+                  href={`/dashboard/inquiries/${inquiry.id}`}
+                  className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50"
                 >
                   <div className="space-y-1">
                     <p className="font-medium">{inquiry.name}</p>
@@ -140,7 +141,7 @@ export default async function DashboardOverviewPage() {
                       {inquiry.createdAt.toLocaleDateString()}
                     </span>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           )}
@@ -156,13 +157,13 @@ export default async function DashboardOverviewPage() {
         <CardContent>
           <div className="flex flex-wrap gap-3">
             <Button asChild>
-              <Link href="#">
+              <Link href="/dashboard/treks/new">
                 <Plus className="h-4 w-4" />
                 Create Trek
               </Link>
             </Button>
             <Button asChild variant="outline">
-              <Link href="#">
+              <Link href="/dashboard/blog/new">
                 <FileText className="h-4 w-4" />
                 Write Blog Post
               </Link>
